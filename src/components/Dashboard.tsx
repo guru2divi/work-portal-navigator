@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Building2, LogOut, Users, FileText, Shield, Code, Bug, Eye, Settings, Database, Clipboard } from "lucide-react";
 import Workspace from "./Workspace";
+import AddWorkspaceDialog from "./AddWorkspaceDialog";
 
 interface User {
   id: string;
@@ -19,8 +20,9 @@ interface DashboardProps {
 
 const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [activeWorkspace, setActiveWorkspace] = useState<string | null>(null);
-
-  const workspaceConfig = {
+  
+  // Initial workspaces - can be expanded dynamically
+  const [workspaceConfig, setWorkspaceConfig] = useState({
     dev: {
       title: "Development",
       description: "Source code, documentation, and development assets",
@@ -70,6 +72,29 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       color: "bg-teal-500",
       lightColor: "bg-teal-50 border-teal-200"
     }
+  });
+
+  // Store all users for workspace permission management
+  const [allUsers] = useState<User[]>([
+    { id: "1", username: "admin", role: "admin", workspaces: ["dev", "qa", "review", "admin", "data", "docs", "planning"] },
+    { id: "2", username: "dev-lead", role: "editor", workspaces: ["dev", "docs", "planning"] },
+    { id: "3", username: "qa-manager", role: "editor", workspaces: ["qa", "docs"] },
+    { id: "4", username: "reviewer", role: "editor", workspaces: ["review", "docs"] },
+    { id: "5", username: "data-analyst", role: "editor", workspaces: ["data", "docs"] },
+    { id: "6", username: "project-manager", role: "editor", workspaces: ["planning", "docs", "admin"] },
+    { id: "7", username: "viewer", role: "viewer", workspaces: ["dev", "qa", "review", "docs"] }
+  ]);
+
+  const handleAddWorkspace = (workspaceData: any) => {
+    // Add new workspace to config
+    setWorkspaceConfig(prev => ({
+      ...prev,
+      [workspaceData.id]: workspaceData.config
+    }));
+
+    // Note: In a real application, you would also update user permissions on the backend
+    // For this demo, we're just showing the UI functionality
+    console.log('New workspace created:', workspaceData);
   };
 
   const getRoleBadge = (role: string) => {
@@ -127,6 +152,14 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Your Workspaces</h2>
           <p className="text-gray-600">Select a workspace to manage files and collaborate with your team.</p>
         </div>
+
+        {/* Add Workspace Button - Only show for admins */}
+        {user.role === 'admin' && (
+          <AddWorkspaceDialog 
+            users={allUsers}
+            onAddWorkspace={handleAddWorkspace}
+          />
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Object.entries(workspaceConfig).map(([key, config]) => {
@@ -190,6 +223,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
                   <li>• Access all workspaces</li>
                   <li>• Upload & delete files</li>
                   <li>• Manage user permissions</li>
+                  <li>• Create new workspaces</li>
                 </ul>
               </div>
               <div className="space-y-2">
