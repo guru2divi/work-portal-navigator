@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Building2, LogOut, Users, FileText, Shield, Code, Bug, Eye } from "lucide-react";
+import { Building2, LogOut, Users, FileText, Shield, Code, Bug, Eye, Settings, Database, Clipboard } from "lucide-react";
 import Workspace from "./Workspace";
 
 interface User {
@@ -42,6 +41,34 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
       icon: Eye,
       color: "bg-purple-500",
       lightColor: "bg-purple-50 border-purple-200"
+    },
+    admin: {
+      title: "Administration",
+      description: "System settings, user management, and configurations",
+      icon: Settings,
+      color: "bg-red-500",
+      lightColor: "bg-red-50 border-red-200"
+    },
+    data: {
+      title: "Data Management",
+      description: "Database files, data analysis, and reports",
+      icon: Database,
+      color: "bg-indigo-500",
+      lightColor: "bg-indigo-50 border-indigo-200"
+    },
+    docs: {
+      title: "Documentation",
+      description: "User manuals, technical docs, and project specifications",
+      icon: FileText,
+      color: "bg-orange-500",
+      lightColor: "bg-orange-50 border-orange-200"
+    },
+    planning: {
+      title: "Project Planning",
+      description: "Project plans, timelines, and resource allocation",
+      icon: Clipboard,
+      color: "bg-teal-500",
+      lightColor: "bg-teal-50 border-teal-200"
     }
   };
 
@@ -101,7 +128,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
           <p className="text-gray-600">Select a workspace to manage files and collaborate with your team.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Object.entries(workspaceConfig).map(([key, config]) => {
             const hasAccess = user.workspaces.includes(key);
             const Icon = config.icon;

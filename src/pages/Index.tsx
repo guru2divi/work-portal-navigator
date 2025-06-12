@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,11 +22,13 @@ const Index = () => {
 
   // Mock users for demonstration
   const mockUsers: User[] = [
-    { id: "1", username: "admin", role: "admin", workspaces: ["dev", "qa", "review"] },
-    { id: "2", username: "dev-lead", role: "editor", workspaces: ["dev"] },
-    { id: "3", username: "qa-manager", role: "editor", workspaces: ["qa"] },
-    { id: "4", username: "reviewer", role: "editor", workspaces: ["review"] },
-    { id: "5", username: "viewer", role: "viewer", workspaces: ["dev", "qa", "review"] }
+    { id: "1", username: "admin", role: "admin", workspaces: ["dev", "qa", "review", "admin", "data", "docs", "planning"] },
+    { id: "2", username: "dev-lead", role: "editor", workspaces: ["dev", "docs", "planning"] },
+    { id: "3", username: "qa-manager", role: "editor", workspaces: ["qa", "docs"] },
+    { id: "4", username: "reviewer", role: "editor", workspaces: ["review", "docs"] },
+    { id: "5", username: "data-analyst", role: "editor", workspaces: ["data", "docs"] },
+    { id: "6", username: "project-manager", role: "editor", workspaces: ["planning", "docs", "admin"] },
+    { id: "7", username: "viewer", role: "viewer", workspaces: ["dev", "qa", "review", "docs"] }
   ];
 
   useEffect(() => {
@@ -44,6 +45,8 @@ const Index = () => {
       "dev-lead": "dev123",
       "qa-manager": "qa123",
       "reviewer": "review123",
+      "data-analyst": "data123",
+      "project-manager": "pm123",
       "viewer": "view123"
     };
 
@@ -103,7 +106,7 @@ const Index = () => {
               <Users className="h-8 w-8 text-green-500" />
               <div>
                 <h3 className="font-semibold text-gray-900">Team Workspaces</h3>
-                <p className="text-sm text-gray-600">Dev, QA, Review</p>
+                <p className="text-sm text-gray-600">Dev, QA, Review & More</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 p-4 bg-white rounded-lg shadow-sm">
@@ -174,8 +177,12 @@ const Index = () => {
                   <span className="text-orange-600 font-medium">QA Editor</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>reviewer / review123</span>
-                  <span className="text-purple-600 font-medium">Review Editor</span>
+                  <span>data-analyst / data123</span>
+                  <span className="text-indigo-600 font-medium">Data Editor</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>project-manager / pm123</span>
+                  <span className="text-teal-600 font-medium">Planning Editor</span>
                 </div>
                 <div className="flex justify-between">
                   <span>viewer / view123</span>
