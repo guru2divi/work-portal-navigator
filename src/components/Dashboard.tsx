@@ -123,6 +123,31 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
     console.log('New workspace created:', workspaceData);
   };
 
+  const handleDeleteWorkspace = (workspaceId: string) => {
+    // Remove the workspace from configuration
+    setWorkspaceConfig(prev => {
+      const newConfig = { ...prev };
+      delete newConfig[workspaceId];
+      return newConfig;
+    });
+
+    // Remove the workspace from all users
+    setAllUsers(prevUsers => 
+      prevUsers.map(u => ({
+        ...u,
+        workspaces: u.workspaces.filter(ws => ws !== workspaceId)
+      }))
+    );
+
+    // Remove the workspace from current user if they have it
+    setUser(prevUser => ({
+      ...prevUser,
+      workspaces: prevUser.workspaces.filter(ws => ws !== workspaceId)
+    }));
+
+    console.log('Workspace deleted:', workspaceId);
+  };
+
   // Filter workspaces based on search term
   const filteredWorkspaces = Object.entries(workspaceConfig).filter(([key, config]) => {
     const hasAccess = user.workspaces.includes(key);
@@ -179,6 +204,7 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
           filteredWorkspaces={filteredWorkspaces}
           user={user}
           onWorkspaceClick={setActiveWorkspace}
+          onDeleteWorkspace={user.role === 'admin' ? handleDeleteWorkspace : undefined}
         />
 
         <RoleInfoCard />
