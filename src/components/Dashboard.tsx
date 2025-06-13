@@ -1,13 +1,12 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Building2, LogOut, Users, FileText, Shield, Code, Bug, Eye, Settings, Database, Clipboard, Search, Activity } from "lucide-react";
+import { Code, Bug, Eye, Settings, Database, FileText, Clipboard } from "lucide-react";
 import Workspace from "./Workspace";
-import AddWorkspaceDialog from "./AddWorkspaceDialog";
 import AdminActivityPanel from "./AdminActivityPanel";
+import DashboardHeader from "./DashboardHeader";
+import SearchAndActions from "./SearchAndActions";
+import WorkspaceGrid from "./WorkspaceGrid";
+import RoleInfoCard from "./RoleInfoCard";
 
 interface User {
   id: string;
@@ -98,15 +97,6 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
     console.log('New workspace created:', workspaceData);
   };
 
-  const getRoleBadge = (role: string) => {
-    const variants = {
-      admin: "bg-red-100 text-red-800 border-red-200",
-      editor: "bg-blue-100 text-blue-800 border-blue-200", 
-      viewer: "bg-gray-100 text-gray-800 border-gray-200"
-    };
-    return variants[role as keyof typeof variants] || variants.viewer;
-  };
-
   // Filter workspaces based on search term
   const filteredWorkspaces = Object.entries(workspaceConfig).filter(([key, config]) => {
     const hasAccess = user.workspaces.includes(key);
@@ -139,155 +129,33 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <h1 className="text-xl font-bold text-gray-900">WorkSpace Hub</h1>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              {user.role === 'admin' && (
-                <Button variant="outline" size="sm" onClick={() => setShowAdminPanel(true)}>
-                  <Activity className="h-4 w-4 mr-2" />
-                  Admin Panel
-                </Button>
-              )}
-              <div className="flex items-center space-x-2">
-                <Users className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">{user.username}</span>
-                <Badge className={`text-xs ${getRoleBadge(user.role)}`}>
-                  {user.role.toUpperCase()}
-                </Badge>
-              </div>
-              <Button variant="outline" size="sm" onClick={onLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <DashboardHeader 
+        user={user}
+        onLogout={onLogout}
+        onShowAdminPanel={() => setShowAdminPanel(true)}
+      />
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Your Workspaces</h2>
           <p className="text-gray-600">Select a workspace to manage files and collaborate with your team.</p>
         </div>
 
-        {/* Search Bar and Add Workspace */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search workspaces..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          {user.role === 'admin' && (
-            <AddWorkspaceDialog 
-              users={allUsers}
-              onAddWorkspace={handleAddWorkspace}
-            />
-          )}
-        </div>
+        <SearchAndActions
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          user={user}
+          allUsers={allUsers}
+          onAddWorkspace={handleAddWorkspace}
+        />
 
-        {/* Workspaces Grid */}
-        {filteredWorkspaces.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardContent>
-              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? 'No workspaces found' : 'No workspaces available'}
-              </h3>
-              <p className="text-gray-500">
-                {searchTerm 
-                  ? 'Try adjusting your search terms' 
-                  : 'Contact your administrator for workspace access'
-                }
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredWorkspaces.map(([key, config]) => {
-              const Icon = config.icon;
-              
-              return (
-                <Card 
-                  key={key}
-                  className={`transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105 border-2 ${config.lightColor}`}
-                  onClick={() => setActiveWorkspace(key)}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-lg ${config.color}`}>
-                        <Icon className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{config.title}</CardTitle>
-                        <Badge variant="outline" className="text-xs mt-1">
-                          {user.role === 'viewer' ? 'View Only' : 'Full Access'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-sm">
-                      {config.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+        <WorkspaceGrid
+          filteredWorkspaces={filteredWorkspaces}
+          user={user}
+          onWorkspaceClick={setActiveWorkspace}
+        />
 
-        {/* Role Information */}
-        <Card className="mt-8 bg-blue-50 border-blue-200">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-blue-900">
-              <Shield className="h-5 w-5" />
-              <span>Access Level Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="space-y-2">
-                <h4 className="font-semibold text-blue-900">Admin</h4>
-                <ul className="space-y-1 text-blue-700">
-                  <li>• Access all workspaces</li>
-                  <li>• Upload & delete files</li>
-                  <li>• Manage user permissions</li>
-                  <li>• Create new workspaces</li>
-                  <li>• View activity logs</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold text-blue-900">Editor</h4>
-                <ul className="space-y-1 text-blue-700">
-                  <li>• Access assigned workspaces</li>
-                  <li>• Upload & delete files</li>
-                  <li>• Search and organize</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold text-blue-900">Viewer</h4>
-                <ul className="space-y-1 text-blue-700">
-                  <li>• View files only</li>
-                  <li>• Search and download</li>
-                  <li>• No upload/delete access</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <RoleInfoCard />
       </main>
     </div>
   );
