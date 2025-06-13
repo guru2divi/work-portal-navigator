@@ -20,7 +20,8 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
-const Dashboard = ({ user, onLogout }: DashboardProps) => {
+const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
+  const [user, setUser] = useState<User>(initialUser);
   const [activeWorkspace, setActiveWorkspace] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -79,7 +80,7 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   });
 
   // Store all users for workspace permission management
-  const [allUsers] = useState<User[]>([
+  const [allUsers, setAllUsers] = useState<User[]>([
     { id: "1", username: "admin", role: "admin", workspaces: ["dev", "qa", "review", "admin", "data", "docs", "planning"] },
     { id: "2", username: "dev-lead", role: "editor", workspaces: ["dev", "docs", "planning"] },
     { id: "3", username: "qa-manager", role: "editor", workspaces: ["qa", "docs"] },
@@ -90,10 +91,35 @@ const Dashboard = ({ user, onLogout }: DashboardProps) => {
   ]);
 
   const handleAddWorkspace = (workspaceData: any) => {
+    const newWorkspaceId = workspaceData.id;
+    
+    // Add the new workspace configuration
     setWorkspaceConfig(prev => ({
       ...prev,
-      [workspaceData.id]: workspaceData.config
+      [newWorkspaceId]: workspaceData.config
     }));
+
+    // Update users' workspace permissions based on selected users
+    setAllUsers(prevUsers => 
+      prevUsers.map(u => {
+        if (workspaceData.users.includes(u.id)) {
+          return {
+            ...u,
+            workspaces: [...u.workspaces, newWorkspaceId]
+          };
+        }
+        return u;
+      })
+    );
+
+    // If current user is in the selected users, update their workspaces
+    if (workspaceData.users.includes(user.id)) {
+      setUser(prevUser => ({
+        ...prevUser,
+        workspaces: [...prevUser.workspaces, newWorkspaceId]
+      }));
+    }
+
     console.log('New workspace created:', workspaceData);
   };
 
