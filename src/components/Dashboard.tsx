@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Code, Bug, Eye, Settings, Database, FileText, Clipboard } from "lucide-react";
 import Workspace from "./Workspace";
@@ -148,6 +147,60 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
     console.log('Workspace deleted:', workspaceId);
   };
 
+  const handleUpdateWorkspace = (workspaceId: string, updatedData: any) => {
+    // Update workspace configuration
+    setWorkspaceConfig(prev => ({
+      ...prev,
+      [workspaceId]: {
+        ...prev[workspaceId],
+        ...updatedData.config, // Expected to be {title, description, icon, color, lightColor}
+      }
+    }));
+
+    // Optionally update user access:
+    if (updatedData.users) {
+      // updatedData.users is expected as an array of userIds who should have access
+      setAllUsers(prevUsers =>
+        prevUsers.map(u => {
+          let ws = u.workspaces;
+          if (updatedData.users.includes(u.id)) {
+            // Add workspace if not already there
+            if (!ws.includes(workspaceId)) ws = [...ws, workspaceId];
+          } else {
+            // Remove workspace access if in user's list
+            ws = ws.filter(w => w !== workspaceId);
+          }
+          // Update user role if included (e.g., { roles: { [userId]: "editor" } })
+          let roleUpdate = {};
+          if (updatedData.roles && updatedData.roles[u.id]) {
+            roleUpdate = { role: updatedData.roles[u.id] };
+          }
+          return {
+            ...u,
+            ...roleUpdate,
+            workspaces: ws
+          };
+        })
+      );
+      // If updating current user
+      if (updatedData.users.includes(user.id) || (user.workspaces.includes(workspaceId) && !updatedData.users.includes(user.id))) {
+        let newWs = user.workspaces;
+        if (updatedData.users.includes(user.id)) {
+          if (!newWs.includes(workspaceId)) newWs = [...newWs, workspaceId];
+        } else {
+          newWs = newWs.filter(w => w !== workspaceId);
+        }
+        setUser(prevUser => ({
+          ...prevUser,
+          workspaces: newWs,
+          ...(updatedData.roles && updatedData.roles[prevUser.id] ? { role: updatedData.roles[prevUser.id] } : {}),
+        }));
+      }
+    }
+
+    console.log('Workspace updated:', workspaceId, updatedData);
+  };
+
   // Filter workspaces based on search term
   const filteredWorkspaces = Object.entries(workspaceConfig).filter(([key, config]) => {
     const hasAccess = user.workspaces.includes(key);
@@ -164,6 +217,7 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
         config={workspaceConfig[activeWorkspace as keyof typeof workspaceConfig]}
         onBack={() => setActiveWorkspace(null)}
         onLogout={onLogout}
+        // If Workspace supports editing, you can also pass onUpdateWorkspace={handleUpdateWorkspace}
       />
     );
   }
@@ -198,6 +252,7 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
           user={user}
           allUsers={allUsers}
           onAddWorkspace={handleAddWorkspace}
+          onUpdateWorkspace={handleUpdateWorkspace} {/* Pass update handler if relevant */}
         />
 
         <WorkspaceGrid
@@ -205,6 +260,7 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
           user={user}
           onWorkspaceClick={setActiveWorkspace}
           onDeleteWorkspace={user.role === 'admin' ? handleDeleteWorkspace : undefined}
+          onUpdateWorkspace={user.role === 'admin' ? handleUpdateWorkspace : undefined} {/* Make editable for admin */}
         />
 
         <RoleInfoCard />
