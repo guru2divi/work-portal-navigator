@@ -217,7 +217,6 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
         config={workspaceConfig[activeWorkspace as keyof typeof workspaceConfig]}
         onBack={() => setActiveWorkspace(null)}
         onLogout={onLogout}
-        // If Workspace supports editing, you can also pass onUpdateWorkspace={handleUpdateWorkspace}
       />
     );
   }
@@ -252,7 +251,7 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
           user={user}
           allUsers={allUsers}
           onAddWorkspace={handleAddWorkspace}
-          onUpdateWorkspace={handleUpdateWorkspace} {/* Pass update handler if relevant */}
+          onUpdateWorkspace={handleUpdateWorkspace}
         />
 
         <WorkspaceGrid
@@ -260,7 +259,7 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
           user={user}
           onWorkspaceClick={setActiveWorkspace}
           onDeleteWorkspace={user.role === 'admin' ? handleDeleteWorkspace : undefined}
-          onUpdateWorkspace={user.role === 'admin' ? handleUpdateWorkspace : undefined} {/* Make editable for admin */}
+          onUpdateWorkspace={user.role === 'admin' ? handleUpdateWorkspace : undefined}
         />
 
         <RoleInfoCard />
