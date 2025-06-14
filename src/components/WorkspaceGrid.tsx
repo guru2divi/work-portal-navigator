@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, Trash2 } from "lucide-react";
+import { Building2, Trash2, Pencil } from "lucide-react";
+import EditWorkspaceDialog from "./EditWorkspaceDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,9 +35,18 @@ interface WorkspaceGridProps {
   user: User;
   onWorkspaceClick: (workspaceId: string) => void;
   onDeleteWorkspace?: (workspaceId: string) => void;
+  onUpdateWorkspace?: (workspaceId: string, updatedData: any) => void;
+  allUsers?: User[]; // passed from Dashboard, only needed for edit dialog
 }
 
-const WorkspaceGrid = ({ filteredWorkspaces, user, onWorkspaceClick, onDeleteWorkspace }: WorkspaceGridProps) => {
+const WorkspaceGrid = ({
+  filteredWorkspaces,
+  user,
+  onWorkspaceClick,
+  onDeleteWorkspace,
+  onUpdateWorkspace,
+  allUsers = [],
+}: WorkspaceGridProps) => {
   if (filteredWorkspaces.length === 0) {
     return (
       <Card className="text-center py-12">
@@ -65,44 +74,68 @@ const WorkspaceGrid = ({ filteredWorkspaces, user, onWorkspaceClick, onDeleteWor
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {filteredWorkspaces.map(([key, config]) => {
         const Icon = config.icon;
-        
+        // For edit, you need current user IDs that have access to this workspace:
+        const currentAccessIds = allUsers.length > 0 ? allUsers.filter(u => u.workspaces.includes(key)).map(u => u.id) : [];
+
         return (
           <Card 
             key={key}
             className={`transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105 border-2 ${config.lightColor} relative`}
             onClick={() => onWorkspaceClick(key)}
           >
-            {user.role === 'admin' && onDeleteWorkspace && (
-              <div className="absolute top-2 right-2 z-10">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete the "{config.title}" workspace? This action cannot be undone and will remove access for all users.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-red-500 hover:bg-red-600"
-                        onClick={(e) => handleDeleteWorkspace(key, e)}
+            {user.role === 'admin' && (onDeleteWorkspace || onUpdateWorkspace) && (
+              <div className="absolute top-2 right-2 z-10 flex gap-1">
+                {onUpdateWorkspace && allUsers && (
+                  <EditWorkspaceDialog
+                    openTrigger={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={e => e.stopPropagation()}
+                        aria-label="Edit workspace"
                       >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    }
+                    workspaceId={key}
+                    config={config}
+                    allUsers={allUsers}
+                    currentAccessIds={currentAccessIds}
+                    onSave={onUpdateWorkspace}
+                  />
+                )}
+                {onDeleteWorkspace && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete the "{config.title}" workspace? This action cannot be undone and will remove access for all users.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-500 hover:bg-red-600"
+                          onClick={(e) => handleDeleteWorkspace(key, e)}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             )}
             <CardHeader className="pb-3">

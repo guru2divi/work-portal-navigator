@@ -251,7 +251,6 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
           user={user}
           allUsers={allUsers}
           onAddWorkspace={handleAddWorkspace}
-          onUpdateWorkspace={handleUpdateWorkspace}
         />
 
         <WorkspaceGrid
@@ -260,6 +259,7 @@ const Dashboard = ({ user: initialUser, onLogout }: DashboardProps) => {
           onWorkspaceClick={setActiveWorkspace}
           onDeleteWorkspace={user.role === 'admin' ? handleDeleteWorkspace : undefined}
           onUpdateWorkspace={user.role === 'admin' ? handleUpdateWorkspace : undefined}
+          allUsers={user.role === 'admin' ? allUsers : undefined}
         />
 
         <RoleInfoCard />
